@@ -48,8 +48,10 @@ class LogReader:
                 yield struct.unpack(fmt, f.read(sz))
 
     def __iter__(self):
-        for time_str, tag_index_str, value, status, marker, internal in self._iter_file(self._floatfile, '<19s5sdcci'):
-            time = datetime.strptime(time_str.decode(), "%Y%m%d%H:%M:%S%f")
+        for time_str, msec_str, tag_index_str, value, status, marker, internal in self._iter_file(self._floatfile, '<16s3s5sdcci'):
+            time = datetime.strptime(time_str.decode(), "%Y%m%d%H:%M:%S")
+            time = time.replace(microsecond= int(msec_str.decode()) * 1000)
+
             tag_index = int(tag_index_str.decode())
 
             tag = self._tags.get(tag_index, "UNKNOWN")
