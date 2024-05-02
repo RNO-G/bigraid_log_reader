@@ -44,8 +44,13 @@ class LogReader:
 
             # Read individual records
             sz = struct.calcsize(fmt)
-            while f.read(1) != b'\x1a':
-                yield struct.unpack(fmt, f.read(sz))
+            while (k := f.read(1)) not in [b'\x1a', b'']:
+                r = f.read(sz)
+                try:
+                    yield struct.unpack(fmt, r)
+                except struct.error as e:
+                    print(f"Error decoding record: err='{e}', raw='{r}', sep='{k}'")
+                    return
 
     def __iter__(self):
         for time_str, msec_str, tag_index_str, value, status, marker, internal in self._iter_file(self._floatfile, '<16s3s5sdcci'):
