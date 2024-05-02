@@ -15,12 +15,13 @@ if __name__ == "__main__":
 
     # Filter the data slightly, since the drill can sometimes record spurious bad values
     df = df.rolling(3).median()
-    df = df.dropna()
 
     # Do some cleanup
-    df[df["[PLC]DRILLACTIVECURRENT"].abs() > 1e10] = 0
-    df[df["[PLC]WIRESPOOLEDOUT"].abs() > 1e6] = 0
-    df[df["[PLC]DRILLFEEDBACKVEL"].abs() > 1e7] = 0
+    df[df["[PLC]DRILLACTIVECURRENT"].abs() > 1e10] = np.nan
+    df[df["[PLC]WIRESPOOLEDOUT"].abs() > 200] = np.nan
+    df[df["[PLC]DRILLFEEDBACKVEL"].abs() > 1e7] = np.nan
+
+    df = df.dropna()
 
     # Mark drill runs
     df["run"] = 0.0
@@ -32,6 +33,9 @@ if __name__ == "__main__":
     # Add a column that indicates if active cutting of new ice was happening. Kind of a guess based on other parameters
     df["cutting"] = 0
     df.loc[(df["[PLC]DRILLACTIVECURRENT"] > 0.5) & (df["run"] > 0) & (df["[PLC]WIRESPOOLEDOUT"] > 1) & (df["[PLC]CABLESPEED"].abs() < 1), "cutting"] = 1
+    # Filter out cutting state where the payout is not relatively close to the maximum
+    group_max_out = df["[PLC]WIRESPOOLEDOUT"].groupby(df["run"]).transform("max")
+    df.loc[((group_max_out / df["[PLC]WIRESPOOLEDOUT"]).fillna(0) > 10), "cutting"] = 0
 
     # Calculate the (running) cut depth drilled per run. For each run, this starts at 0 when drilling begins at
     # the bottom of the hole, and increases until drilling stops
@@ -68,7 +72,10 @@ if __name__ == "__main__":
 
     df_plt = df[df["[PLC]WIRESPOOLEDOUT"] == df["[PLC]WIRESPOOLEDOUT"].cummax()]
 
+    df[["run", "cutting", "cut_depth", "[PLC]WIRESPOOLEDOUT"]].plot()
+
     print(df.columns)
+
     # [PLC]WIRESPOOLEDOUT vs [PLC]CABLETENSION
     # angle vs depth
     # autostopdepth vs depth
