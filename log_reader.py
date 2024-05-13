@@ -39,8 +39,10 @@ class LogReader:
     def _iter_file(file_path: Path, fmt: str):
         with file_path.open('rb') as f:
             # Skip header
-            while f.read(1) != b'\r':
-                pass
+            while True:
+                if f.read(1) == b'\r' and f.read(1) == b' ':
+                    f.seek(f.tell() - 1)
+                    break
 
             # Read individual records
             sz = struct.calcsize(fmt)
