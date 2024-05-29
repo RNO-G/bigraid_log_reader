@@ -74,6 +74,17 @@ if __name__ == "__main__":
     ax.legend()
     ax.set_title("Drilling Time per Run")
 
+    fig, axes = plt.subplots(1, 2)
+    for i, k in enumerate(["[PLC]IMUPITCH", "[PLC]IMUROLL"]):
+        d = df[df[k].abs() < 2]
+        # subtract the mean when the drill is hanging freely above the hole
+        zero_offset = df[(df["[PLC]WIRESPOOLEDOUT"] < 1) & (df["[PLC]CABLESPEED"].abs() < 0.1) & (df["[PLC]DRILLFEEDBACKVEL"].abs() < 0.1)][k].mean()
+        axes[i].hist2d(d[k] - zero_offset, d["[PLC]WIRESPOOLEDOUT"], bins=35)
+        axes[i].set_title(k)
+    fig.suptitle("Angle per Depth")
+    fig.supylabel("Wire spooled out [m]")
+    fig.supxlabel("Angle [deg]")
+
     df.plot.scatter(y="[PLC]WIRESPOOLEDOUT", x="[PLC]AUTODOWNSTOPDEPTH", c="run")
     plt.title("Stop Depth vs Depth")
 
