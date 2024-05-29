@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     # Mark drill runs
     df["run"] = 0.0
-    df.loc[df["[PLC]WIRESPOOLEDOUT"] > 0.1, "run"] = 1.0
+    df.loc[df["[PLC]WIRESPOOLEDOUT"] > 1.5, "run"] = 1.0
     run_ids = df['run'].ne(df['run'].shift()).cumsum() - 1
     in_run = df["run"] != 0.0
     df.loc[in_run, "run"] = run_ids.loc[in_run] / 2
