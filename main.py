@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib.backends.backend_pdf
 
@@ -70,13 +71,26 @@ if __name__ == "__main__":
     df[(df["cutting"] == 1)].plot.scatter(x="cut_depth", y="weight_on_bit", c="run")
     plt.title("Estimated Weight on Bit vs Running Cut Depth")
 
+    def group_duration(x):
+        diff = x.diff()
+        return diff[diff < np.timedelta64(10, 's')].sum()
+    total = df[df["run"] > 0].index.to_series().groupby(df["run"]).agg(np.ptp).dt.total_seconds().rename("total")
+    cutting = df[df["cutting"] == 1].index.to_series().groupby(df["run"]).agg(np.ptp).dt.total_seconds().rename("cutting")
+    moving = df[df["[PLC]CABLESPEED"] > 2].index.to_series().groupby(df["run"]).agg(group_duration).dt.total_seconds().rename("moving")
+    ejecting = df[df["[PLC]DRILLFEEDBACKVEL"] < -5].index.to_series().groupby(df["run"]).agg(np.ptp).dt.total_seconds().rename("ejecting")
+    grps = pd.concat([total, moving, cutting, ejecting], axis=1).fillna(0.0)
+
     fig = plt.figure()
-    ax =  plt.subplot()
-    df[df["run"] > 0].index.to_series().groupby(df["run"]).agg(np.ptp).plot(kind="bar", ax=ax, label="Total")
-    df[df["cutting"] == 1].index.to_series().groupby(df["run"]).agg(np.ptp).plot(kind="bar", ax=ax, color="orange", label="Active Cutting")
-    ax.set_ylabel("Drilling Time [s]")
+    ax = plt.subplot()
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    ax.bar(grps.index, grps['total'], color=colors[0], label="Total")
+    ax.bar(grps.index, grps['cutting'], color=colors[1], label="Cutting")
+    ax.bar(grps.index, grps['ejecting'], color=colors[2], label="Ejecting", bottom=grps['cutting'])
+    ax.bar(grps.index, grps['moving'], color=colors[3], label="Moving", bottom=grps['cutting'] + grps["ejecting"])
     ax.legend()
-    ax.set_title("Drilling Time per Run")
+    ax.set_title("Time per Run")
+    ax.set_ylabel("Time [s]")
+    ax.set_xlabel("Run")
 
     fig, axes = plt.subplots(1, 2)
     for i, k in enumerate(["[PLC]IMUPITCH", "[PLC]IMUROLL"]):
