@@ -44,6 +44,10 @@ if __name__ == "__main__":
     df["cut_depth"] = df['cut_depth'].groupby(df["run"]).transform("cummax")
     df["cut_depth"] = df["cut_depth"].fillna(0)
 
+    # Calculate the weight-on-bit
+    # Assumes cable weight of 159g/m and ice density of 0.91g/mL
+    df["weight_on_bit"] = (-1 * df["[PLC]CABLETENSION"] + df["[PLC]WIRESPOOLEDOUT"] * 0.159 + 280 + ((0.285/2)**2 * np.pi * df['cut_depth'] * 910))
+
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]DRILLACTIVECURRENT", c="run")
     plt.title("Motor Current vs Running Cut Depth")
 
@@ -58,6 +62,9 @@ if __name__ == "__main__":
 
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="[PLC]CABLESPEED")
     plt.title("Cable Tension vs Running Cut Depth")
+
+    df[(df["cutting"] == 1)].plot.scatter(x="cut_depth", y="weight_on_bit", c="run")
+    plt.title("Estimated Weight on Bit vs Running Cut Depth")
 
     fig = plt.figure()
     ax =  plt.subplot()
