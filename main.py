@@ -25,11 +25,14 @@ if __name__ == "__main__":
     df = df.dropna()
 
     # Mark drill runs
-    df["run"] = 0.0
-    df.loc[df["[PLC]WIRESPOOLEDOUT"] > 1.5, "run"] = 1.0
+    spooled_out = df["[PLC]WIRESPOOLEDOUT"] > 1.5
+    df['run'] = 1.0
+    df.loc[spooled_out.gt(spooled_out.shift()), 'run'] = 0
     run_ids = df['run'].ne(df['run'].shift()).cumsum() - 1
     in_run = df["run"] != 0.0
     df.loc[in_run, "run"] = run_ids.loc[in_run] / 2
+    df.loc[df['run'] == 0.0, 'run'] = df['run'].shift(-1)
+    df[df['run'] == 0.0] = 1.0
 
     # Add a column that indicates if active cutting of new ice was happening. Kind of a guess based on other parameters
     df["cutting"] = 0
