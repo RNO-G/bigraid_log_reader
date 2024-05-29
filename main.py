@@ -18,8 +18,9 @@ if __name__ == "__main__":
 
     # Do some cleanup
     df[df["[PLC]DRILLACTIVECURRENT"].abs() > 1e10] = np.nan
-    df[df["[PLC]WIRESPOOLEDOUT"].abs() > 200] = np.nan
-    df[df["[PLC]DRILLFEEDBACKVEL"].abs() > 1e7] = np.nan
+    df.loc[df["[PLC]WIRESPOOLEDOUT"].abs() > 200, "[PLC]WIRESPOOLEDOUT"] = np.nan
+    df["[PLC]WIRESPOOLEDOUT"] = df["[PLC]WIRESPOOLEDOUT"].ffill()
+    df[df["[PLC]DRILLFEEDBACKVEL"].abs() > 100] = np.nan
 
     df = df.dropna()
 
