@@ -26,7 +26,7 @@ class LogReader:
             raise FileNotFoundError(self._floatfile)
 
         self._tags = {}
-        for name, index, type, dtype in self._iter_file(self._tagfile, "<256s4s2s1s"):
+        for name, index, type, _, dtype in self._iter_file(self._tagfile, "<256s4s1sc1s"):
             tag = LogReader.Tag(
                 name=name.decode().strip(),
                 index=int(index.decode()),
