@@ -46,7 +46,10 @@ if __name__ == "__main__":
     cutting = df[df["cutting"] == 1].index.to_series().groupby(df["run"]).agg(np.ptp).dt.total_seconds().rename("cutting")
     moving = df[df["[PLC]CABLESPEED"] > 2].index.to_series().groupby(df["run"]).agg(group_duration).dt.total_seconds().rename("moving")
     ejecting = df[df["[PLC]DRILLFEEDBACKVEL"] < -5].index.to_series().groupby(df["run"]).agg(np.ptp).dt.total_seconds().rename("ejecting")
-    snowblower_travel = df[df['[PLC]ICECONVEYOR.SETSPEED'].abs() > 1].index.to_series().groupby(df["run"]).agg(group_duration).dt.total_seconds().rename("snowblower_travel")
+    if "[PLC]ICECONVEYOR.SETSPEED" in df.columns:
+        snowblower_travel = df[df['[PLC]ICECONVEYOR.SETSPEED'].abs() > 1].index.to_series().groupby(df["run"]).agg(group_duration).dt.total_seconds().rename("snowblower_travel")
+    else:
+        snowblower_travel = pd.Series(np.zeros(cutting.shape)).rename("snowblower_travel")
     grps = pd.concat([total, moving, cutting, ejecting, snowblower_travel], axis=1).fillna(0.0)
 
     fig = plt.figure()
