@@ -40,4 +40,11 @@ def preprocess(df):
     # Assumes cable weight of 159g/m and ice density of 0.91g/mL
     df["weight_on_bit"] = (-1 * df["[PLC]CABLETENSION"] + df["[PLC]WIRESPOOLEDOUT"] * 0.159 + 280 + ((0.285/2)**2 * np.pi * df['cut_depth'] * 910))
 
+    # Normalize pitch and roll using the yaw angle. This should give fixed pitch and roll wrt. the hole
+    # coordinate system, although there is no way to tell which direction pitch and roll are actually pointing in
+    yaw_cos =  np.cos(np.deg2rad(df['[PLC]IMUYAW']))
+    yaw_sin = np.sin(np.deg2rad(df['[PLC]IMUYAW']))
+    df['hole_pitch'] = df['[PLC]IMUPITCH'] * yaw_cos - df['[PLC]IMUROLL'] * yaw_sin
+    df['hole_roll'] = df['[PLC]IMUPITCH'] * yaw_sin + df['[PLC]IMUROLL'] * yaw_cos
+
     return df
