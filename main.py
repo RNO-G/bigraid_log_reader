@@ -82,7 +82,7 @@ if __name__ == "__main__":
         axes[i].set_title(k)
     for ax in axes:
         ax.set_xlim(-display_max, display_max)
-    fig.suptitle("Angle per Depth, normalized using IMU Yaw")
+    fig.suptitle("Angle per Depth")
     fig.supylabel("Wire spooled out [m]")
     fig.supxlabel("Angle [deg]")
 
