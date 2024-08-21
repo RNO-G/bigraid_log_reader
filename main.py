@@ -10,9 +10,7 @@ from log_reader import LogReader
 from preprocess import preprocess
 
 if __name__ == "__main__":
-    logfile = "C:\\Users\\WIPAC\\NERC\\BAS BigRAID - Documents\\Season Reports\\2024\\DataLog\\2024 05 30 0000 BigRAID (Tagname).DAT"
-    #logfile = r"C:\Users\WIPAC\NERC\BAS BigRAID - Documents\Season Reports\Data from control box\logs\Data Log\2022 07 07 0000 (Tagname).DAT"
-    #logfile = "D:\\DataLog\\2024 06 01 0000 BigRAID (Tagname).DAT"
+    logfile = "./test_data/2024 07 15 0001 BigRAID (Tagname).DAT"
     logfile = Path(logfile)
 
     reader = LogReader(tagfile=logfile)
