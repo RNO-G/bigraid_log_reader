@@ -27,7 +27,7 @@ def preprocess(df):
     df.loc[(df["[PLC]DRILLACTIVECURRENT"] > 0.5) & (df["run"] > 0) & (df["[PLC]WIRESPOOLEDOUT"] > 1) & (df["[PLC]CABLESPEED"].abs() < 1), "cutting"] = 1
     # Filter out cutting state where the payout is not relatively close to the maximum
     group_max_out = df["[PLC]WIRESPOOLEDOUT"].groupby(df["run"]).transform("max")
-    df.loc[((group_max_out / df["[PLC]WIRESPOOLEDOUT"]).fillna(0) > 10), "cutting"] = 0
+    df.loc[((group_max_out - df["[PLC]WIRESPOOLEDOUT"]).fillna(0) > 5), "cutting"] = 0
 
     # Calculate the (running) cut depth drilled per run. For each run, this starts at 0 when drilling begins at
     # the bottom of the hole, and increases until drilling stops
