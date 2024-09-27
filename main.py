@@ -17,7 +17,7 @@ if __name__ == "__main__":
     df = reader.as_df()
 
     # Add additional calculated columns to the data
-    df = preprocess(df)
+    df = preprocess(df, run_depth_threshold=1.5)
 
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]DRILLACTIVECURRENT", c="run")
     plt.title("Motor Current vs Running Cut Depth")
