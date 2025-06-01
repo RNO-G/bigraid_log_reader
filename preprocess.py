@@ -9,7 +9,7 @@ def preprocess(df, run_depth_threshold=1.5):
     df.loc[df["[PLC]WIRESPOOLEDOUT"].abs() > 200, "[PLC]WIRESPOOLEDOUT"] = np.nan
     df["[PLC]WIRESPOOLEDOUT"] = df["[PLC]WIRESPOOLEDOUT"].ffill()
     df[df["[PLC]DRILLFEEDBACKVEL"].abs() > 100] = np.nan
-
+    df[df['[PLC]DRILLTEMP'] < -100 ] = np.nan
     df = df.dropna()
 
     # Mark drill runs
