@@ -27,12 +27,13 @@ def plot(folder, start_date, end_date, out_file):
     mr = MultiLogReader.find_files(folder, start_date, end_date)
     df = mr.as_df()
 
-    end_date_str = ""
-    if end_date is not None:
-        end_date_str = f"_{end_date}"
-
-    out_file_path = Path(f"BigRAID_{start_date}{end_date_str}.pdf")
-    _plot(df, out_file_path)
+    if out_file is None:
+        end_date_str = ""
+        if end_date is not None:
+            end_date_str = f"_{end_date}"
+        out_file = Path(f"BigRAID_{start_date}{end_date_str}.pdf")
+    out_file = Path(out_file)
+    _plot(df, out_file)
 
 
 def _plot(df, out_path):
