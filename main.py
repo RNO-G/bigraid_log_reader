@@ -137,6 +137,12 @@ def _plot(df, out_path):
         H_norm_rows = H / H.max(axis=1, keepdims=True)
         H_norm_rows = np.nan_to_num(H_norm_rows)
         axes[i].pcolormesh(yedges, xedges, H_norm_rows)
+
+        # Plot a regression line
+        coeff = np.polyfit(d["[PLC]WIRESPOOLEDOUT"].values, vals.values, 1)
+        fit_fn = np.poly1d(coeff)
+        axes[i].plot([fit_fn(0), fit_fn(depth_max)], [0, depth_max], 'r--')
+
         axes[i].set_title(k)
     for ax in axes:
         ax.set_xlim(-display_max, display_max)
