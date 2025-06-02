@@ -63,6 +63,16 @@ if __name__ == "__main__":
     ax.set_ylabel("Time [s]")
     ax.set_xlabel("Run")
 
+    fig = plt.figure()
+    ax = plt.subplot()
+    run_cut_depth = df['cut_depth'].groupby(df['run']).max()
+    run_cut_speed = (run_cut_depth / total) * 60 * 60
+    ax.bar(run_cut_speed.index, run_cut_speed.values)
+    fig.suptitle("Drilling Performance")
+    ax.set_title("Cut length / Total time for the run")
+    ax.set_ylabel("Drilling Performance [m/h]")
+    ax.set_xlabel("Run")
+
     fig, axes = plt.subplots(1, 2)
     display_max = 0
     for i, k in enumerate(["[PLC]IMUPITCH", "[PLC]IMUROLL"]):
