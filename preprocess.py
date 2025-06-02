@@ -25,7 +25,7 @@ def preprocess(df, run_depth_threshold=1.5):
 
     # Add a column that indicates if active cutting of new ice was happening. Kind of a guess based on other parameters
     df["cutting"] = 0
-    df.loc[(df["[PLC]DRILLACTIVECURRENT"] > 0.5) & (df["run"] > 0) & (df["[PLC]WIRESPOOLEDOUT"] > run_depth_threshold) & (df["[PLC]CABLESPEED"].abs() < 1), "cutting"] = 1
+    df.loc[(df['[PLC]DRILLFEEDBACKVEL'] > 40 ) & (df["[PLC]DRILLACTIVECURRENT"] > 0.5) & (df["run"] > 0) & (df["[PLC]WIRESPOOLEDOUT"] > run_depth_threshold) & (df["[PLC]CABLESPEED"].abs() < 1), "cutting"] = 1
     # Filter out cutting state where the payout is not relatively close to the maximum
     group_max_out = df["[PLC]WIRESPOOLEDOUT"].groupby(df["run"]).transform("max")
     df.loc[((group_max_out - df["[PLC]WIRESPOOLEDOUT"]).fillna(0) > 5), "cutting"] = 0
