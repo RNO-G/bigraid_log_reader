@@ -1,21 +1,41 @@
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
+import click
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-import matplotlib as mpl
 import matplotlib.backends.backend_pdf
 
-from log_reader import LogReader
+from multi_log_reader import MultiLogReader
 from preprocess import preprocess
 
-if __name__ == "__main__":
-    logfile = "./test_data/2024 07 15 0001 BigRAID (Tagname).DAT"
-    logfile = Path(logfile)
+@click.command
+@click.option("--folder", help="Folder containing BigRAID PLC logs", required=True)
+@click.option("--start", "start_date",
+              help="A start date in isoformat. Can optionally include a time as well.", required=True)
+@click.option("--end", "end_date",
+              default=None,
+              help="A end date. If not supplied, this defaults to end-of-day of the start date.")
+@click.option("--out", "out_file",
+              default=None,
+              help="Output path for the PDF. Defaults to a name based on the dates in the current folder")
+def plot(folder, start_date, end_date, out_file):
 
-    reader = LogReader(tagfile=logfile)
-    df = reader.as_df()
 
+    mr = MultiLogReader.find_files(folder, start_date, end_date)
+    df = mr.as_df()
+
+    end_date_str = ""
+    if end_date is not None:
+        end_date_str = f"_{end_date}"
+
+    out_file_path = Path(f"BigRAID_{start_date}{end_date_str}.pdf")
+    _plot(df, out_file_path)
+
+
+def _plot(df, out_path):
     # Add additional calculated columns to the data
     df = preprocess(df, run_depth_threshold=1.5)
 
@@ -130,16 +150,10 @@ if __name__ == "__main__":
 
     df[["run", "cutting", "cut_depth", "[PLC]WIRESPOOLEDOUT"]].plot()
 
-    print(df.columns)
-
-    # [PLC]WIRESPOOLEDOUT vs [PLC]CABLETENSION
-    # angle vs depth
-    # autostopdepth vs depth
-    # diff of autostopdepth vs time
-    # depth vs time
-    # feedbackvel vs depth
-
     # plt.show()
-    with matplotlib.backends.backend_pdf.PdfPages(logfile.with_suffix(".pdf").name) as pdf:
+    with matplotlib.backends.backend_pdf.PdfPages(out_path) as pdf:
         for fig in range(1,  plt.gcf().number + 1):
             pdf.savefig(fig)
+
+if __name__ == "__main__":
+    plot()
