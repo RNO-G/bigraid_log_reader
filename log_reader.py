@@ -56,7 +56,11 @@ class LogReader:
 
     def __iter__(self):
         for time_str, msec_str, tag_index_str, value, status, marker, internal in self._iter_file(self._floatfile, '<16s3s5sdcci'):
-            time = datetime.strptime(time_str.decode(), "%Y%m%d%H:%M:%S")
+            try:
+                time = datetime.strptime(time_str.decode(), "%Y%m%d%H:%M:%S")
+            except ValueError:
+                print(f"Error decoding record timestamp: time_str={time_str}")
+                continue
             time = time.replace(microsecond= int(msec_str.decode()) * 1000)
 
             tag_index = int(tag_index_str.decode())
