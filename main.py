@@ -67,11 +67,19 @@ if __name__ == "__main__":
     ax = plt.subplot()
     run_cut_depth = df['cut_depth'].groupby(df['run']).max()
     run_cut_speed = (run_cut_depth / total) * 60 * 60
-    ax.bar(run_cut_speed.index, run_cut_speed.values)
+    run_auto_mode = df['[PLC]AUTOMODE'].groupby(df['run']).any()
+    colors = ['tab:orange' if a else 'tab:blue' for a in run_auto_mode.values]
+    labels = ['_A' if a else '_M' for a in run_auto_mode.values]
+    if (idx := labels.index("_A")) >= 0:
+        labels[idx] = "Auto"
+    if (idx := labels.index("_M")) >= 0:
+        labels[idx] = "Manual"
+    ax.bar(run_cut_speed.index, run_cut_speed.values, color=colors, label=labels)
     fig.suptitle("Drilling Performance")
     ax.set_title("Cut length / Total time for the run")
     ax.set_ylabel("Drilling Performance [m/h]")
     ax.set_xlabel("Run")
+    ax.legend(title="Mode")
 
     fig, axes = plt.subplots(1, 2)
     display_max = 0
