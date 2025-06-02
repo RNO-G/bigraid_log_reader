@@ -30,6 +30,12 @@ def preprocess(df, run_depth_threshold=1.5):
     group_max_out = df["[PLC]WIRESPOOLEDOUT"].groupby(df["run"]).transform("max")
     df.loc[((group_max_out - df["[PLC]WIRESPOOLEDOUT"]).fillna(0) > 5), "cutting"] = 0
 
+    # Filter out 'runs' where we werent actually cutting
+    cutting_run_groups = (df["cutting"].groupby(df["run"]).any())
+    df.loc[(df['run'].isin(cutting_run_groups[~cutting_run_groups].index)), 'run'] = np.nan
+    df = df.dropna()
+    df['run'] = df['run'].ne(df['run'].shift()).cumsum().astype(float)  # Re-index runs
+
     # Calculate the (running) cut depth drilled per run. For each run, this starts at 0 when drilling begins at
     # the bottom of the hole, and increases until drilling stops
     df["cut_depth"] = df[df["cutting"] == 1]["[PLC]WIRESPOOLEDOUT"].groupby(df["run"]).transform("first")
