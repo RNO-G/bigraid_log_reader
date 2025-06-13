@@ -97,6 +97,15 @@ def _plot(df, out_path):
     if (idx := labels.index("_M")) >= 0:
         labels[idx] = "Manual"
     ax.bar(run_cut_speed.index, run_cut_speed.values, color=colors, label=labels)
+
+    # Plot the average
+    ax.axhline(np.mean(run_cut_speed.values), 0, max(run_cut_speed.index))
+
+    # Plot a regression line
+    coeff = np.polyfit(run_cut_speed.index, run_cut_speed.values, 1)
+    fit_fn = np.poly1d(coeff)
+    ax.plot([0, max(run_cut_speed.index)], [fit_fn(0), fit_fn(max(run_cut_speed.index))], 'r--')
+
     fig.suptitle("Drilling Performance")
     ax.set_title("Cut length / Total time for the run")
     ax.set_ylabel("Drilling Performance [m/h]")
