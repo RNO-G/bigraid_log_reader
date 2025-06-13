@@ -117,7 +117,7 @@ def _plot(df, out_path):
     for i, k in enumerate(["[PLC]IMUPITCH", "[PLC]IMUROLL"]):
         d = df[(df[k].abs() < 2) & (df["[PLC]WIRESPOOLEDOUT"] > 2)]
         # subtract the mean when the drill is hanging freely above the hole
-        zero_offset = df[(df["[PLC]WIRESPOOLEDOUT"] < 1) & (df["[PLC]CABLESPEED"].abs() < 0.1) & (df["[PLC]DRILLFEEDBACKVEL"].abs() < 0.1)][k].mean()
+        zero_offset = df[(df["[PLC]WIRESPOOLEDOUT"] < 1) & (df["[PLC]CABLESPEED"].abs() < 0.1) & (df["[PLC]DRILLFEEDBACKVEL"].abs() < 0.1) & (df[k].abs() < 5.0)][k].mean()
 
         vals = d[k] - zero_offset
         display_max = max(vals.abs().quantile(0.99), display_max)
@@ -138,7 +138,7 @@ def _plot(df, out_path):
     for i, k in enumerate(["hole_pitch", "hole_roll"]):
         d = df[(df[k].abs() < 2) & (df["[PLC]WIRESPOOLEDOUT"] > 2)]
         # subtract the mean when the drill is hanging freely above the hole
-        zero_offset = df[(df["[PLC]WIRESPOOLEDOUT"] < 1) & (df["[PLC]CABLESPEED"].abs() < 0.1) & (df["[PLC]DRILLFEEDBACKVEL"].abs() < 0.1)][k].mean()
+        zero_offset = df[(df["[PLC]WIRESPOOLEDOUT"] < 1) & (df["[PLC]CABLESPEED"].abs() < 0.1) & (df["[PLC]DRILLFEEDBACKVEL"].abs() < 0.1) & (df[k].abs() < 5.0)][k].mean()
 
         vals = d[k] - zero_offset
         display_max = max(vals.abs().quantile(0.99), display_max)
