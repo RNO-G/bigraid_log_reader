@@ -33,6 +33,7 @@ def plot(folder, start_date, end_date, out_file):
             end_date_str = f"_{end_date}"
         out_file = Path(f"BigRAID_{start_date}{end_date_str}.pdf")
     out_file = Path(out_file)
+    out_file = out_file.with_name(out_file.name.replace(":", "-"))
     _plot(df, out_file)
 
 
