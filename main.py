@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib.backends.backend_pdf
+import matplotlib.style as mplstyle; mplstyle.use('fast')
+plt.rcParams['lines.markersize'] = 1
 
 from multi_log_reader import MultiLogReader
 from preprocess import preprocess
@@ -21,8 +23,8 @@ from preprocess import preprocess
 @click.option("--out", "out_file",
               default=None,
               help="Output path for the PDF. Defaults to a name based on the dates in the current folder")
-def plot(folder, start_date, end_date, out_file):
 
+def plot(folder, start_date, end_date, out_file):
 
     mr = MultiLogReader.find_files(folder, start_date, end_date)
     df = mr.as_df()
@@ -41,22 +43,22 @@ def _plot(df, out_path):
     # Add additional calculated columns to the data
     df = preprocess(df, run_depth_threshold=1.5)
 
-    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]DRILLACTIVECURRENT", c="run")
+    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]DRILLACTIVECURRENT", c="run", s =1, rasterized=True)
     plt.title("Motor Current vs Running Cut Depth")
 
-    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLETENSION", c="run")
+    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True)
     plt.title("Cable Tension vs Depth")
 
-    df[df["cutting"] == 1].plot.scatter(x="run", y="cut_depth")
+    df[df["cutting"] == 1].plot.scatter(x="run", y="cut_depth",s =1, rasterized=True)
     plt.title("Running Cut Depth per run")
 
-    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="run")
+    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True)
     plt.title("Cable Tension vs Running Cut Depth")
 
-    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="[PLC]CABLESPEED")
+    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="[PLC]CABLESPEED",s =1, rasterized=True)
     plt.title("Cable Tension vs Running Cut Depth")
 
-    df[(df["cutting"] == 1)].plot.scatter(x="cut_depth", y="weight_on_bit", c="run")
+    df[(df["cutting"] == 1)].plot.scatter(x="cut_depth", y="weight_on_bit", c="run",s =1, rasterized=True)
     plt.title("Estimated Weight on Bit vs Running Cut Depth")
 
     def group_duration(x):
@@ -71,7 +73,7 @@ def _plot(df, out_path):
     else:
         snowblower_travel = pd.Series(np.zeros(cutting.shape)).rename("snowblower_travel")
     grps = pd.concat([total, moving, cutting, ejecting, snowblower_travel], axis=1).fillna(0.0)
-
+    
     fig = plt.figure()
     ax = plt.subplot()
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -165,7 +167,17 @@ def _plot(df, out_path):
 
     df_plt = df[df["[PLC]WIRESPOOLEDOUT"] == df["[PLC]WIRESPOOLEDOUT"].cummax()]
 
-    df[["run", "cutting", "cut_depth", "[PLC]WIRESPOOLEDOUT"]].plot()
+    df[["run", "cutting", "cut_depth", "[PLC]WIRESPOOLEDOUT"]].plot(use_index=False)
+    plt.figure()
+    sampling_time = 1
+    xtime_seconds =  sampling_time*np.arange(0,len(df["cut_depth"].values))
+    xtime = xtime_seconds/60/60
+    plt.scatter(xtime, df["[PLC]WIRESPOOLEDOUT"].values, s=1, rasterized=True)
+    plt.xlabel("time from start [hrs]")
+    plt.ylabel("depth [m]")  
+
+    
+    
 
     # plt.show()
     with matplotlib.backends.backend_pdf.PdfPages(out_path) as pdf:
