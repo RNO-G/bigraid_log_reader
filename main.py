@@ -12,6 +12,7 @@ plt.rcParams['lines.markersize'] = 1
 
 from multi_log_reader import MultiLogReader
 from preprocess import preprocess
+from plot_angle import euler_to_rotation_matrix, get_xyz_from_euler
 
 @click.command
 @click.option("--folder", help="Folder containing BigRAID PLC logs", required=True)
@@ -45,21 +46,32 @@ def _plot(df, out_path):
 
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]DRILLACTIVECURRENT", c="run", s =1, rasterized=True)
     plt.title("Motor Current vs Running Cut Depth")
+    plt.ylim(0,6.5)
+    plt.xlim(0,2.5)
 
     df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True)
     plt.title("Cable Tension vs Depth")
+    plt.ylim(120,480)
+    plt.xlim(0,105)
 
     df[df["cutting"] == 1].plot.scatter(x="run", y="cut_depth",s =1, rasterized=True)
     plt.title("Running Cut Depth per run")
+    plt.ylim(0,2.5)
 
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True)
     plt.title("Cable Tension vs Running Cut Depth")
+    plt.ylim(120,480)
+    plt.xlim(0,2.6)
 
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="[PLC]CABLESPEED",s =1, rasterized=True)
     plt.title("Cable Tension vs Running Cut Depth")
+    plt.ylim(120,480)
+    plt.xlim(0,2.6)
 
     df[(df["cutting"] == 1)].plot.scatter(x="cut_depth", y="weight_on_bit", c="run",s =1, rasterized=True)
     plt.title("Estimated Weight on Bit vs Running Cut Depth")
+    plt.xlim(0,2.6)
+    plt.ylim(0,180)
 
     def group_duration(x):
         diff = x.diff()
@@ -94,10 +106,12 @@ def _plot(df, out_path):
     run_auto_mode = df['[PLC]AUTOMODE'].groupby(df['run']).any()
     colors = ['tab:orange' if a else 'tab:blue' for a in run_auto_mode.values]
     labels = ['_A' if a else '_M' for a in run_auto_mode.values]
-    if (idx := labels.index("_A")) >= 0:
-        labels[idx] = "Auto"
-    if (idx := labels.index("_M")) >= 0:
-        labels[idx] = "Manual"
+    if "_A" in labels:
+        if (idx := labels.index("_A")) >= 0:
+            labels[idx] = "Auto"
+    if "_M" in labels:
+        if (idx := labels.index("_M")) >= 0:
+            labels[idx] = "Manual"
     ax.bar(run_cut_speed.index, run_cut_speed.values, color=colors, label=labels)
 
     # Plot the average
@@ -113,6 +127,75 @@ def _plot(df, out_path):
     ax.set_ylabel("Drilling Performance [m/h]")
     ax.set_xlabel("Run")
     ax.legend(title="Mode")
+
+    #fig, axes = plt.subplots(1, 3)
+    display_max = 0
+    for i, k in enumerate(["[PLC]IMUYAW","[PLC]IMUPITCH", "[PLC]IMUROLL"]):
+        fig = plt.figure()
+        ax = plt.subplot()
+        d = df[(df["[PLC]WIRESPOOLEDOUT"] > 2)]
+        # subtract the mean when the drill is hanging freely above the hole
+        #zero_offset = df[(df["[PLC]WIRESPOOLEDOUT"] < 1) & (df["[PLC]CABLESPEED"].abs() < 0.1) & (df["[PLC]DRILLFEEDBACKVEL"].abs() < 0.1) & (df[k].abs() < 5.0)][k].mean()
+
+        vals = d[k]# - zero_offset
+        display_max = max(vals.abs().quantile(0.99), display_max)
+        depth_max = df['[PLC]WIRESPOOLEDOUT'].max()
+        #print(i,k, vals.values)
+        if k=="[PLC]IMUYAW":
+            xmin = -180
+            xmax = 180
+        elif  k=="[PLC]IMUROLL":
+            xmin = -2
+            xmax = 2
+        elif  k=="[PLC]IMUPITCH":
+            xmin = -2
+            xmax = 2
+        H, xedges, yedges = np.histogram2d(d["[PLC]WIRESPOOLEDOUT"], vals, bins=[int(depth_max/2), 50], range=[[0, depth_max], [xmin, xmax]])
+        H_norm_rows = H / H.max(axis=1, keepdims=True)
+        H_norm_rows = np.nan_to_num(H_norm_rows)
+        ax.pcolormesh(yedges, xedges, H_norm_rows, rasterized=True)
+        ax.set_title(k)
+        ax.set_xlim(xmin, xmax)
+        #ax.set_xlim(-display_max, display_max)
+        #fig.title("Angle per Depth")
+        ax.set_ylabel("Wire spooled out [m]")
+        ax.set_xlabel("Angle [deg]")    
+    yaw_rad = np.deg2rad(d["[PLC]IMUYAW"].values)
+    pitch_rad= np.deg2rad(d["[PLC]IMUPITCH"].values)
+    roll_rad = np.deg2rad(d["[PLC]IMUROLL"].values)
+    # attemp n1
+    # Convert pitch to inclination (if pitch is from horizontal)
+    incl = np.deg2rad(90)-pitch_rad  # adjust if needed!
+
+    # Compute increments
+    depth = d["[PLC]WIRESPOOLEDOUT"].values 
+    d_depth = np.diff(depth)
+    incl_mid = 0.5 * (incl[1:] + incl[:-1])
+    yaw_mid = 0.5 * (yaw_rad[1:] + yaw_rad[:-1])
+
+    print ("yaw=",yaw_rad)
+    print("pitch=",pitch_rad)
+    print("roll=",roll_rad)
+    print("depth=", depth)
+
+    # Horizontal displacement
+    dH = d_depth * np.sin(incl_mid)
+    dX = dH * np.sin(yaw_mid)
+    dY = dH * np.cos(yaw_mid)
+
+    # Cumulative sum
+    X = np.concatenate(([0], np.cumsum(dX)))
+    Y = np.concatenate(([0], np.cumsum(dY)))
+    
+    # attempt n2
+    # x,y,z = [],[],[]
+    #for ya,p,r in zip(yaw_rad, pitch_rad, roll_rad):
+    #    this_x,this_y,this_z= get_xyz_from_euler(ya, p, r, initial_vector=np.array([1, 0, 0]))
+    #    x = np.hstack([x,this_x])
+    #    y = np.hstack([y,this_y])
+    #    z = np.hstack([z,this_z])
+    ax = plt.figure().add_subplot(projection='3d')
+    ax.plot(X, Y,depth, label='parametric curve')
 
     fig, axes = plt.subplots(1, 2)
     display_max = 0
@@ -167,7 +250,7 @@ def _plot(df, out_path):
 
     df_plt = df[df["[PLC]WIRESPOOLEDOUT"] == df["[PLC]WIRESPOOLEDOUT"].cummax()]
 
-    df[["run", "cutting", "cut_depth", "[PLC]WIRESPOOLEDOUT"]].plot(use_index=False)
+    df[["run", "cutting", "cut_depth", "[PLC]WIRESPOOLEDOUT"]].plot(use_index=False, rasterized=True)
     plt.figure()
     sampling_time = 1
     xtime_seconds =  sampling_time*np.arange(0,len(df["cut_depth"].values))
