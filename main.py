@@ -1,18 +1,19 @@
-from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import click
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib.backends.backend_pdf
-import matplotlib.style as mplstyle; mplstyle.use('fast')
+import matplotlib.style as mplstyle
+
+from hole_trajectory import calculate_trajectory_3d, plot_trajectory_3d, calc_binned_angles
+
+mplstyle.use('fast')
 plt.rcParams['lines.markersize'] = 1
 
 from multi_log_reader import MultiLogReader
 from preprocess import preprocess
-from plot_angle import euler_to_rotation_matrix, get_xyz_from_euler
 
 @click.command
 @click.option("--folder", help="Folder containing BigRAID PLC logs", required=True)
@@ -163,39 +164,6 @@ def _plot(df, out_path):
     yaw_rad = np.deg2rad(d["[PLC]IMUYAW"].values)
     pitch_rad= np.deg2rad(d["[PLC]IMUPITCH"].values)
     roll_rad = np.deg2rad(d["[PLC]IMUROLL"].values)
-    # attemp n1
-    # Convert pitch to inclination (if pitch is from horizontal)
-    incl = np.deg2rad(90)-pitch_rad  # adjust if needed!
-
-    # Compute increments
-    depth = d["[PLC]WIRESPOOLEDOUT"].values 
-    d_depth = np.diff(depth)
-    incl_mid = 0.5 * (incl[1:] + incl[:-1])
-    yaw_mid = 0.5 * (yaw_rad[1:] + yaw_rad[:-1])
-
-    print ("yaw=",yaw_rad)
-    print("pitch=",pitch_rad)
-    print("roll=",roll_rad)
-    print("depth=", depth)
-
-    # Horizontal displacement
-    dH = d_depth * np.sin(incl_mid)
-    dX = dH * np.sin(yaw_mid)
-    dY = dH * np.cos(yaw_mid)
-
-    # Cumulative sum
-    X = np.concatenate(([0], np.cumsum(dX)))
-    Y = np.concatenate(([0], np.cumsum(dY)))
-    
-    # attempt n2
-    # x,y,z = [],[],[]
-    #for ya,p,r in zip(yaw_rad, pitch_rad, roll_rad):
-    #    this_x,this_y,this_z= get_xyz_from_euler(ya, p, r, initial_vector=np.array([1, 0, 0]))
-    #    x = np.hstack([x,this_x])
-    #    y = np.hstack([y,this_y])
-    #    z = np.hstack([z,this_z])
-    ax = plt.figure().add_subplot(projection='3d')
-    ax.plot(X, Y,depth, label='parametric curve')
 
     fig, axes = plt.subplots(1, 2)
     display_max = 0
@@ -245,6 +213,16 @@ def _plot(df, out_path):
     fig.supylabel("Wire spooled out [m]")
     fig.supxlabel("Angle [deg]")
 
+    # Plot a 3D trajectory for the hole
+    mean_angles_x, std_dev_angles_x = calc_binned_angles(df, "hole_pitch")
+    mean_angles_y, std_dev_angles_y = calc_binned_angles(df, "hole_roll")
+
+    z_coords, x_mean, x_std, y_mean, y_std = calculate_trajectory_3d(
+        mean_angles_x, std_dev_angles_x,
+        mean_angles_y, std_dev_angles_y
+    )
+    plot_trajectory_3d(z_coords, x_mean, x_std, y_mean, y_std)
+
     df.plot.scatter(y="[PLC]WIRESPOOLEDOUT", x="[PLC]AUTODOWNSTOPDEPTH", c="run")
     plt.title("Stop Depth vs Depth")
 
@@ -259,8 +237,6 @@ def _plot(df, out_path):
     plt.xlabel("time from start [hrs]")
     plt.ylabel("depth [m]")  
 
-    
-    
 
     # plt.show()
     with matplotlib.backends.backend_pdf.PdfPages(out_path) as pdf:
