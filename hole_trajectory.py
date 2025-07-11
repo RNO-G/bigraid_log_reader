@@ -105,10 +105,24 @@ def plot_trajectory_3d(z, x_mean, x_std, y_mean, y_std):
     x_std3 = x_std * 3
     y_std3 = y_std * 3
 
-    # Main 3D Plot ---
+    # Main 3D Plot
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')
     ax1.plot(x_mean, y_mean, z, lw=2, label='Mean Trajectory', color='royalblue')
-    ax1.errorbar(x_mean, y_mean, z, xerr=x_std3, yerr=y_std3, color='cornflowerblue', alpha=0.3, label='3σ')
+
+    # Create a grid for the angles of the ellipse and the z-axis
+    ellipse_angle = np.linspace(0, 2 * np.pi, 80)
+    z_grid, ellipse_angle_grid = np.meshgrid(z, ellipse_angle)
+
+    # Calculate the x and y coordinates of the surface
+    X_surface = x_mean[:, np.newaxis] + x_std3[:, np.newaxis] * np.cos(ellipse_angle_grid).T
+    Y_surface = y_mean[:, np.newaxis] + y_std3[:, np.newaxis] * np.sin(ellipse_angle_grid).T
+    Z_surface = z_grid.T  # Transpose to match the shape of X and Y
+
+    # Plot the surface
+    ax1.plot_surface(X_surface, Y_surface, Z_surface,
+                     color='cornflowerblue', alpha=0.1, linewidth=0, antialiased=True,
+                     label='3σ')
+
     ax1.set_xlabel('X Position [m]')
     ax1.set_ylabel('Y Position [m]')
     ax1.set_zlabel('Z Position (Depth) [m]')
