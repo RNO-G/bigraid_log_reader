@@ -8,6 +8,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib.backends.backend_pdf
 import matplotlib.style as mplstyle
+#mplstyle.use('tableau-colorblind10')
+#mplstyle.use('seaborn-colorblind')
 from matplotlib.dates import DateFormatter
 
 mplstyle.use('fast')
@@ -66,7 +68,8 @@ def plot(folder, hole_times, out_file, no_cache):
     dataframes = []
     for hole_data in hole_time_data:
         try:
-            site, hole, t_start, t_end, geoloc = (
+            number, site, hole, t_start, t_end, geoloc = (
+                hole_data['number'],
                 hole_data['site'], hole_data['hole'],
                 hole_data['start'], hole_data.get('end'),
                 hole_data.get('geoloc', "")
@@ -75,9 +78,10 @@ def plot(folder, hole_times, out_file, no_cache):
             print(f"Error. Malformed hole times json. Missing: {e} in {hole_data}")
             continue
 
-        print(f"Reading data for hole {site}-{hole}")
+        print(f"Reading data for hole {number}-{site}-{hole}")
         cached_df = MultiLogReader.find_files(folder, t_start, t_end).as_df()
         cached_df = preprocess(cached_df)
+        cached_df['number'] = number
         cached_df['site'] = site
         cached_df['hole'] = hole
         cached_df['geoloc'] = geoloc
@@ -95,12 +99,17 @@ def plot(folder, hole_times, out_file, no_cache):
 
 
 def _plot(df, out_path):
-    hole_groups = df.groupby(['site', 'hole'])
+    hole_groups = df.groupby(['number','site', 'hole'])
 
     fig = plt.figure()
     ax = fig.subplots()
-    for (site, hole), idx in hole_groups.groups.items():
 
+    # Generate colors from the colormap
+    n = 12
+    cmap = plt.get_cmap('viridis', n)
+    i =0 
+    for (number, site, hole), idx in hole_groups.groups.items():
+        print(number, site, hole, i, cmap(i))
         data = df.loc[idx, ['[PLC]WIRESPOOLEDOUT', 'hole_duration']].cummax()
         # Choose 100 evenly spaced points and subsample the data
         subset_idx = np.round(np.linspace(0, data.shape[0]-1, 100)).astype(int)
@@ -110,8 +119,10 @@ def _plot(df, out_path):
             pd.to_datetime(subsample['hole_duration'], unit='s'),
             subsample['[PLC]WIRESPOOLEDOUT'],
             s=3,
-            label=f"Site {site} Hole {hole}"
+            label=f"Site {site} Hole {hole}",
+            c = [cmap(i)]
         )
+        i = i+1
 
     formatter = DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(formatter)

@@ -1,11 +1,13 @@
 [
   {
+    "number": 1,
     "site": 0,
     "hole": 1,
     "start": "2025-05-29T03:00:00",
     "end": "2025-05-30"
   },
   {
+    "number": 2,
     "site": 25,
     "hole": 1,
     "geoloc": "South",
@@ -13,6 +15,7 @@
     "end": "2025-06-06"
   },
   {
+    "number": 3,
     "site": 25,
     "hole": 2,
     "geoloc": "East",
@@ -20,6 +23,7 @@
     "end": "2025-06-10T14:00:00"
   },
   {
+    "number": 4,
     "site": 25,
     "hole": 3,
     "geoloc": "West",
@@ -27,6 +31,7 @@
     "end": "2025-06-13"
   },
   {
+    "number": 5,
     "site": 15,
     "hole": 1,
     "geoloc": "East",
@@ -34,6 +39,7 @@
     "end": "2025-06-18"
   },
   {
+    "number": 6,
     "site": 15,
     "hole": 2,
     "geoloc": "West",
@@ -41,6 +47,7 @@
     "end": "2025-06-21"
   },
   {
+    "number": 7,
     "site": 35,
     "hole": 1,
     "geoloc": "South",
@@ -48,6 +55,7 @@
     "end": "2025-06-25T12:00:00"
   },
   {
+    "number": 8,
     "site": 35,
     "hole": 2,
     "geoloc": "West",
@@ -55,6 +63,7 @@
     "end": "2025-06-30"
   },
   {
+    "number": 9,
     "site": 35,
     "hole": 3,
     "geoloc": "East",
@@ -62,6 +71,7 @@
     "end": "2025-07-02"
   },
   {
+    "number": 10,
     "site": 34,
     "hole": 1,
     "geoloc": "East",
@@ -69,6 +79,7 @@
     "end": "2025-07-04"
   },
   {
+    "number": 11,
     "site": 34,
     "hole": 2,
     "geoloc": "South",
@@ -76,6 +87,7 @@
     "end": "2025-07-08"
   },
   {
+    "number": 12,
     "site": 34,
     "hole": 3,
     "geoloc": "West",
