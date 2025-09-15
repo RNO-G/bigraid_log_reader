@@ -14,7 +14,7 @@ from matplotlib.dates import DateFormatter
 
 mplstyle.use('fast')
 plt.rcParams['lines.markersize'] = 1
-
+#matplotlib.rcParams['font.size'] = 18
 from multi_log_reader import MultiLogReader
 from preprocess import preprocess
 

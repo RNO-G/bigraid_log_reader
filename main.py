@@ -11,6 +11,8 @@ from hole_trajectory import calculate_trajectory_3d, plot_trajectory_3d, calc_bi
 
 mplstyle.use('fast')
 plt.rcParams['lines.markersize'] = 1
+plt.rcParams['font.size'] = 14
+plt.rcParams['figure.constrained_layout.use'] = True
 
 from multi_log_reader import MultiLogReader
 from preprocess import preprocess
@@ -46,33 +48,67 @@ def _plot(df, out_path):
     df = preprocess(df, run_depth_threshold=1.5)
 
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]DRILLACTIVECURRENT", c="run", s =1, rasterized=True)
-    plt.title("Motor Current vs Running Cut Depth")
+    #plt.title("Motor Current vs Running Cut Depth")
+    plt.xlabel("Running Cut Depth [m]")
+    plt.ylabel("Motor Current [A]")
     plt.ylim(0,6.5)
-    plt.xlim(0,2.5)
+    plt.xlim(0,2.6)
 
     df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True)
-    plt.title("Cable Tension vs Depth")
+    #plt.title("Cable Tension vs Depth")
+    plt.ylabel("Cable Tension [kg]")
+    plt.xlabel("Depth [m]")
     plt.ylim(120,480)
+    plt.xlabel("Depth [m]")
     plt.xlim(0,105)
 
     df[df["cutting"] == 1].plot.scatter(x="run", y="cut_depth",s =1, rasterized=True)
-    plt.title("Running Cut Depth per run")
-    plt.ylim(0,2.5)
+    #plt.title("Running Cut Depth per run")
+    plt.ylabel("Running Cut Depth [m]")
+    plt.xlabel("Run")
+    plt.ylim(0,2.6)
+    
+    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="cut_depth",s =1, rasterized=True)
+    #plt.title("Running Cut Depth per run")
+    plt.ylabel("Running Cut Depth [m]")
+    plt.xlabel("Depth [m]")
+    plt.ylim(0,2.6)
+
 
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True)
-    plt.title("Cable Tension vs Running Cut Depth")
+    #plt.title("Cable Tension vs Running Cut Depth")
+    plt.ylabel("Cable Tension [kg]")
+    plt.xlabel("Running Cut Depth [m]")
     plt.ylim(120,480)
     plt.xlim(0,2.6)
 
     df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="[PLC]CABLESPEED",s =1, rasterized=True)
-    plt.title("Cable Tension vs Running Cut Depth")
+    #plt.title("Cable Tension vs Running Cut Depth")
+    plt.ylabel("Cable Tension [kg]")
+    plt.xlabel("Running Cut Depth [m]")
     plt.ylim(120,480)
     plt.xlim(0,2.6)
 
     df[(df["cutting"] == 1)].plot.scatter(x="cut_depth", y="weight_on_bit", c="run",s =1, rasterized=True)
-    plt.title("Estimated Weight on Bit vs Running Cut Depth")
+    #plt.title("Estimated Weight on Bit vs Running Cut Depth")
+    plt.ylabel("Weight On Bit [kg]")
+    plt.xlabel("Running Cut Depth [m]")
     plt.xlim(0,2.6)
     plt.ylim(0,180)
+
+    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]DRILLFEEDBACKVEL", c="[PLC]CABLESPEED",s =1, rasterized=True)
+    #plt.title("RPM vs Running Cut Depth")
+    plt.ylabel("Motor speed [RPM]")
+    plt.xlabel("Depth [m]")
+    plt.ylim(60,140)
+    plt.xlim(0,100)
+
+    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLESPEED", c="[PLC]DRILLFEEDBACKVEL",s =1, rasterized=True)
+    #plt.title("RPM vs Running Cut Depth")
+    plt.ylabel("Rate of penetration [m/min]")
+    plt.xlabel("Depth [m]")
+    plt.ylim(0,1)
+    plt.xlim(0,100)
 
     def group_duration(x):
         diff = x.diff()
@@ -96,7 +132,7 @@ def _plot(df, out_path):
     ax.bar(grps.index, grps['ejecting'], color=colors[3], label="Ejecting", bottom=grps['cutting'] + grps['snowblower_travel'])
     ax.bar(grps.index, grps['moving'], color=colors[4], label="Moving", bottom=grps['cutting'] + grps['snowblower_travel'] + grps["ejecting"])
     ax.legend()
-    ax.set_title("Time per Run")
+    #ax.set_title("Time per Run")
     ax.set_ylabel("Time [s]")
     ax.set_xlabel("Run")
 

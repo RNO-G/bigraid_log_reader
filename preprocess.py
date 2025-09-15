@@ -53,5 +53,5 @@ def preprocess(df, run_depth_threshold=1.5):
     yaw_sin = np.sin(np.deg2rad(df['[PLC]IMUYAW']))
     df['hole_pitch'] = df['[PLC]IMUPITCH'] * yaw_cos - df['[PLC]IMUROLL'] * yaw_sin
     df['hole_roll'] = df['[PLC]IMUPITCH'] * yaw_sin + df['[PLC]IMUROLL'] * yaw_cos
-
     return df
+
