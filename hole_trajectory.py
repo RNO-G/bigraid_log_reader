@@ -100,7 +100,7 @@ def plot_trajectory_3d(z, x_mean, x_std, y_mean, y_std):
     """ Plot the 3D trajectory and its 2D projections. """
     plt.style.use('seaborn-v0_8-whitegrid')
     fig = plt.figure(figsize=(18, 8))
-    fig.suptitle('Hole Trajectory with Uncertainty', fontsize=18)
+    fig.suptitle('Hole Trajectory with Uncertainty', fontsize=20)
 
     x_std3 = x_std * 3
     y_std3 = y_std * 3
@@ -146,6 +146,7 @@ def plot_trajectory_3d(z, x_mean, x_std, y_mean, y_std):
     ax2.set_title('X-Z Plane Projection')
     ax2.set_xlabel('Z Position (Depth) [m]')
     ax2.set_ylabel('X Position [m]')
+    ax2.set_ylim(-0.6,0.2)
     ax2.legend()
     ax2.grid(True)
 
@@ -156,6 +157,7 @@ def plot_trajectory_3d(z, x_mean, x_std, y_mean, y_std):
     ax3.set_title('Y-Z Plane Projection')
     ax3.set_xlabel('Z Position (Depth) [m]')
     ax3.set_ylabel('Y Position [m]')
+    ax3.set_ylim(-0.6,0.2)
     ax3.legend()
     ax3.grid(True)
 
