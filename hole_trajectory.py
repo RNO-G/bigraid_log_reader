@@ -28,7 +28,7 @@ def calc_binned_angles(df, key, dz=1.0):
     mean = binned.mean().fillna(0).values
     stddev = binned.std().fillna(0).values
 
-    return mean, stddev
+    return mean, stddev, binned.size()
 
 def calculate_trajectory_3d(
         mean_angles_x_deg, std_dev_angles_x_deg,
@@ -94,6 +94,22 @@ def calculate_trajectory_3d(
     y_std_dev = np.sqrt(y_variance)
 
     return z_coords, x_mean, x_std_dev, y_mean, y_std_dev
+
+
+def calc_inclination(x_mean, x_std, y_mean, y_std):
+    x_mean_rad = np.deg2rad(x_mean)
+    x_std_rad = np.deg2rad(x_std)
+    y_mean_rad = np.deg2rad(y_mean)
+    y_std_rad = np.deg2rad(y_std)
+
+    inclination_mean = np.arccos(np.sqrt(1 - np.pow(x_mean_rad, 2) - np.pow(y_mean_rad, 2)))
+
+    inclination_std = (1/np.tan(inclination_mean)) * np.sqrt(
+        np.pow(np.tan(x_mean_rad), 2) * np.pow(x_std_rad, 2) +
+        np.pow(np.tan(y_mean_rad), 2) * np.pow(y_std_rad, 2)
+    )
+
+    return np.rad2deg(inclination_mean), np.rad2deg(inclination_std)
 
 
 def plot_trajectory_3d(z, x_mean, x_std, y_mean, y_std):
@@ -194,4 +210,19 @@ def plot_stability_comparison(z_full, x_mean_full, x_std_full, y_mean_full, y_st
     ax3.grid(True)
 
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    #plt.show()
+
+
+def plot_inclination(z_coords, inclination_mean, inclination_err):
+    plt.style.use('seaborn-v0_8-whitegrid')
+    fig = plt.figure(figsize=(10, 18))
+    fig.suptitle(f'Inclination vs Depth', fontsize=18)
+
+    ax = plt.subplot()
+    ax.errorbar(inclination_mean, z_coords, xerr=inclination_err, fmt='o', capsize=2, ms=5, label="Inclination")
+    ax.set_xlabel("Inclination [deg]")
+    ax.set_ylabel('Depth [m]')
+    ax.invert_yaxis()
+    ax.legend()
+    ax.grid(True)
+
+    fig.tight_layout(rect=[0, 0, 1, 0.96])

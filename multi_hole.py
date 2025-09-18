@@ -12,6 +12,8 @@ import matplotlib.style as mplstyle
 #mplstyle.use('seaborn-colorblind')
 from matplotlib.dates import DateFormatter
 
+from hole_trajectory import calc_binned_angles, calc_inclination
+
 mplstyle.use('fast')
 plt.rcParams['lines.markersize'] = 1
 #matplotlib.rcParams['font.size'] = 18
@@ -132,7 +134,37 @@ def _plot(df, out_path):
 
     ax.legend()
 
-    #plt.show()
+    # Inclination Plot
+    plt.style.use('seaborn-v0_8-whitegrid')
+    fig = plt.figure(figsize=(10, 18))
+    fig.suptitle(f'Inclination vs Depth', fontsize=18)
+
+    ax = plt.subplot()
+    dz = 1
+    for i, ((number, site, hole), idx) in enumerate(hole_groups.groups.items()):
+        data = df.loc[idx]
+
+        # Calculate inclination angles
+        mean_angles_x, std_dev_angles_x, bin_sizes = calc_binned_angles(data, "hole_pitch", dz=dz)
+        mean_angles_y, std_dev_angles_y, _ = calc_binned_angles(data, "hole_roll", dz=dz)
+        z_coords = np.arange(len(mean_angles_x)) * dz
+        incl_mean, incl_std = calc_inclination(mean_angles_x, std_dev_angles_x,
+                                               mean_angles_y, std_dev_angles_y)
+
+        incl_err = incl_std / np.sqrt(bin_sizes)
+        # Plot them
+        # ax.scatter(incl_mean, z_coords,
+        #             marker='o',  s=16, c=cmap(i), label=f"Site {site} Hole {hole}")
+        ax.errorbar(incl_mean, z_coords, xerr=incl_err,
+                    fmt='o', capsize=2, ms=5, c=cmap(i), label=f"Site {site} Hole {hole}")
+
+    ax.set_xlabel("Inclination [deg]")
+    ax.set_ylabel('Depth [m]')
+    ax.invert_yaxis()
+    ax.legend()
+    ax.grid(True)
+
+    # plt.show()
     with matplotlib.backends.backend_pdf.PdfPages(out_path) as pdf:
         for fig in range(1,  plt.gcf().number + 1):
             pdf.savefig(fig)

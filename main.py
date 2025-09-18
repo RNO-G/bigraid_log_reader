@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 import matplotlib.backends.backend_pdf
 import matplotlib.style as mplstyle
 
-from hole_trajectory import calculate_trajectory_3d, plot_trajectory_3d, calc_binned_angles, plot_stability_comparison
+from hole_trajectory import calculate_trajectory_3d, plot_trajectory_3d, calc_binned_angles, plot_stability_comparison, calc_inclination, plot_inclination
 
 mplstyle.use('fast')
 plt.rcParams['lines.markersize'] = 1
@@ -250,19 +250,21 @@ def _plot(df, out_path):
     fig.supxlabel("Angle [deg]")
 
     # Plot a 3D trajectory for the hole
-    mean_angles_x, std_dev_angles_x = calc_binned_angles(df, "hole_pitch")
-    mean_angles_y, std_dev_angles_y = calc_binned_angles(df, "hole_roll")
+    dz = 1.0
+    mean_angles_x, std_dev_angles_x, angle_bin_sizes = calc_binned_angles(df, "hole_pitch", dz=dz)
+    mean_angles_y, std_dev_angles_y, _= calc_binned_angles(df, "hole_roll", dz=dz)
 
     z_coords, x_mean, x_std, y_mean, y_std = calculate_trajectory_3d(
         mean_angles_x, std_dev_angles_x,
-        mean_angles_y, std_dev_angles_y
+        mean_angles_y, std_dev_angles_y,
+        dz=dz
     )
     plot_trajectory_3d(z_coords, x_mean, x_std, y_mean, y_std)
 
     # Do some stability checks on the trajectory.
     def _plot_stability(df_comp, subtitle):
-        comp_mean_x, comp_std_x = calc_binned_angles(df_comp, "hole_pitch")
-        comp_mean_y, comp_std_y = calc_binned_angles(df_comp, "hole_roll")
+        comp_mean_x, comp_std_x, _ = calc_binned_angles(df_comp, "hole_pitch", dz=dz)
+        comp_mean_y, comp_std_y, _ = calc_binned_angles(df_comp, "hole_roll", dz=dz)
 
         comp_z_coords, comp_x_mean, comp_x_std, comp_y_mean, comp_y_std = calculate_trajectory_3d(
             comp_mean_x, comp_std_x,
@@ -286,6 +288,10 @@ def _plot(df, out_path):
     ## When the drill is not drilling
     df_cutting = df[(df['cutting'] == 0) | (df["[PLC]CABLESPEED"].abs() < 0.1)].dropna()
     _plot_stability(df_cutting, "Drill is not cutting subset")
+
+    incl_mean, incl_std = calc_inclination(mean_angles_x, std_dev_angles_x,
+                                           mean_angles_y, std_dev_angles_y)
+    plot_inclination(z_coords, incl_mean, incl_std / np.sqrt(angle_bin_sizes))
 
     df.plot.scatter(y="[PLC]WIRESPOOLEDOUT", x="[PLC]AUTODOWNSTOPDEPTH", c="run")
     plt.title("Stop Depth vs Depth")
