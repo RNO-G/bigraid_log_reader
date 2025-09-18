@@ -13,6 +13,8 @@ mplstyle.use('fast')
 plt.rcParams['lines.markersize'] = 1
 plt.rcParams['font.size'] = 14
 plt.rcParams['figure.constrained_layout.use'] = True
+plt.rcParams['image.cmap'] = "viridis"
+plt.rcParams['figure.max_open_warning'] = 50
 
 from multi_log_reader import MultiLogReader
 from preprocess import preprocess
@@ -46,15 +48,16 @@ def plot(folder, start_date, end_date, out_file):
 def _plot(df, out_path):
     # Add additional calculated columns to the data
     df = preprocess(df, run_depth_threshold=1.5)
+    figures_start_idx = plt.gcf().number + 1
 
-    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]DRILLACTIVECURRENT", c="run", s =1, rasterized=True)
+    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]DRILLACTIVECURRENT", c="run", s =1, rasterized=True, cmap="viridis")
     #plt.title("Motor Current vs Running Cut Depth")
     plt.xlabel("Running Cut Depth [m]")
     plt.ylabel("Motor Current [A]")
     plt.ylim(0,6.5)
     plt.xlim(0,2.6)
 
-    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True)
+    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True, cmap="viridis")
     #plt.title("Cable Tension vs Depth")
     plt.ylabel("Cable Tension [kg]")
     plt.xlabel("Depth [m]")
@@ -62,48 +65,48 @@ def _plot(df, out_path):
     plt.xlabel("Depth [m]")
     plt.xlim(0,105)
 
-    df[df["cutting"] == 1].plot.scatter(x="run", y="cut_depth",s =1, rasterized=True)
+    df[df["cutting"] == 1].plot.scatter(x="run", y="cut_depth",s =1, rasterized=True, cmap="viridis")
     #plt.title("Running Cut Depth per run")
     plt.ylabel("Running Cut Depth [m]")
     plt.xlabel("Run")
     plt.ylim(0,2.6)
     
-    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="cut_depth",s =1, rasterized=True)
+    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="cut_depth",s =1, rasterized=True, cmap="viridis")
     #plt.title("Running Cut Depth per run")
     plt.ylabel("Running Cut Depth [m]")
     plt.xlabel("Depth [m]")
     plt.ylim(0,2.6)
 
 
-    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True)
+    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="run", s =1, rasterized=True, cmap="viridis")
     #plt.title("Cable Tension vs Running Cut Depth")
     plt.ylabel("Cable Tension [kg]")
     plt.xlabel("Running Cut Depth [m]")
     plt.ylim(120,480)
     plt.xlim(0,2.6)
 
-    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="[PLC]CABLESPEED",s =1, rasterized=True)
+    df[df["cutting"] == 1].plot.scatter(x="cut_depth", y="[PLC]CABLETENSION", c="[PLC]CABLESPEED",s =1, rasterized=True, cmap="viridis")
     #plt.title("Cable Tension vs Running Cut Depth")
     plt.ylabel("Cable Tension [kg]")
     plt.xlabel("Running Cut Depth [m]")
     plt.ylim(120,480)
     plt.xlim(0,2.6)
 
-    df[(df["cutting"] == 1)].plot.scatter(x="cut_depth", y="weight_on_bit", c="run",s =1, rasterized=True)
+    df[(df["cutting"] == 1)].plot.scatter(x="cut_depth", y="weight_on_bit", c="run",s =1, rasterized=True, cmap="viridis")
     #plt.title("Estimated Weight on Bit vs Running Cut Depth")
     plt.ylabel("Weight On Bit [kg]")
     plt.xlabel("Running Cut Depth [m]")
     plt.xlim(0,2.6)
     plt.ylim(0,180)
 
-    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]DRILLFEEDBACKVEL", c="[PLC]CABLESPEED",s =1, rasterized=True)
+    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]DRILLFEEDBACKVEL", c="[PLC]CABLESPEED",s =1, rasterized=True, cmap="viridis")
     #plt.title("RPM vs Running Cut Depth")
     plt.ylabel("Motor speed [RPM]")
     plt.xlabel("Depth [m]")
     plt.ylim(60,140)
     plt.xlim(0,100)
 
-    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLESPEED", c="[PLC]DRILLFEEDBACKVEL",s =1, rasterized=True)
+    df[df["cutting"] == 1].plot.scatter(x="[PLC]WIRESPOOLEDOUT", y="[PLC]CABLESPEED", c="[PLC]DRILLFEEDBACKVEL",s =1, rasterized=True, cmap="viridis")
     #plt.title("RPM vs Running Cut Depth")
     plt.ylabel("Rate of penetration [m/min]")
     plt.xlabel("Depth [m]")
@@ -190,7 +193,7 @@ def _plot(df, out_path):
         H, xedges, yedges = np.histogram2d(d["[PLC]WIRESPOOLEDOUT"], vals, bins=[int(depth_max/2), 50], range=[[0, depth_max], [xmin, xmax]])
         H_norm_rows = H / H.max(axis=1, keepdims=True)
         H_norm_rows = np.nan_to_num(H_norm_rows)
-        ax.pcolormesh(yedges, xedges, H_norm_rows, rasterized=True)
+        ax.pcolormesh(yedges, xedges, H_norm_rows, rasterized=True, cmap="viridis")
         ax.set_title(k)
         ax.set_xlim(xmin, xmax)
         #ax.set_xlim(-display_max, display_max)
@@ -214,7 +217,7 @@ def _plot(df, out_path):
         H, xedges, yedges = np.histogram2d(d["[PLC]WIRESPOOLEDOUT"], d[k] - zero_offset, bins=[int(depth_max/2), 50], range=[[0, depth_max], [-2, 2]])
         H_norm_rows = H / H.max(axis=1, keepdims=True)
         H_norm_rows = np.nan_to_num(H_norm_rows)
-        axes[i].pcolormesh(yedges, xedges, H_norm_rows)
+        axes[i].pcolormesh(yedges, xedges, H_norm_rows, cmap="viridis")
         axes[i].set_title(k)
     for ax in axes:
         ax.set_xlim(-display_max, display_max)
@@ -235,7 +238,7 @@ def _plot(df, out_path):
         H, xedges, yedges = np.histogram2d(d["[PLC]WIRESPOOLEDOUT"], d[k] - zero_offset, bins=[int(depth_max/2), 50], range=[[0, depth_max], [-2, 2]])
         H_norm_rows = H / H.max(axis=1, keepdims=True)
         H_norm_rows = np.nan_to_num(H_norm_rows)
-        axes[i].pcolormesh(yedges, xedges, H_norm_rows)
+        axes[i].pcolormesh(yedges, xedges, H_norm_rows, cmap="viridis")
 
         # Plot a regression line
         coeff = np.polyfit(d["[PLC]WIRESPOOLEDOUT"].values, vals.values, 1)
@@ -293,7 +296,7 @@ def _plot(df, out_path):
                                            mean_angles_y, std_dev_angles_y)
     plot_inclination(z_coords, incl_mean, incl_std / np.sqrt(angle_bin_sizes))
 
-    df.plot.scatter(y="[PLC]WIRESPOOLEDOUT", x="[PLC]AUTODOWNSTOPDEPTH", c="run")
+    df.plot.scatter(y="[PLC]WIRESPOOLEDOUT", x="[PLC]AUTODOWNSTOPDEPTH", c="run", cmap="viridis")
     plt.title("Stop Depth vs Depth")
 
     df_plt = df[df["[PLC]WIRESPOOLEDOUT"] == df["[PLC]WIRESPOOLEDOUT"].cummax()]
@@ -310,8 +313,9 @@ def _plot(df, out_path):
 
     # plt.show()
     with matplotlib.backends.backend_pdf.PdfPages(out_path) as pdf:
-        for fig in range(1,  plt.gcf().number + 1):
+        for fig in range(figures_start_idx,  plt.gcf().number + 1):
             pdf.savefig(fig)
-    plt.close()
+            plt.close(fig)
+
 if __name__ == "__main__":
     plot()
