@@ -162,3 +162,36 @@ def plot_trajectory_3d(z, x_mean, x_std, y_mean, y_std):
     ax3.grid(True)
 
     plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+def plot_stability_comparison(z_full, x_mean_full, x_std_full, y_mean_full, y_std_full,
+                              z_subset, x_mean_subset, y_mean_subset, subtitle):
+    """
+    Plots the full trajectory against a trajectory calculated from a subset of data.
+    """
+    plt.style.use('seaborn-v0_8-whitegrid')
+    fig = plt.figure(figsize=(18, 8))
+    fig.suptitle(f'Trajectory Stability Comparison', fontsize=18)
+    fig.text(0.5, 0.925, subtitle, horizontalalignment="center")
+
+    ax2 = fig.add_subplot(2, 1, 1)
+    ax2.plot(z_full, x_mean_full, lw=2, label='Main Mean X', color='firebrick')
+    ax2.fill_between(z_full, x_mean_full - x_std_full, x_mean_full + x_std_full, color='lightcoral', alpha=0.6, label='±1 Std Dev')
+    ax2.plot(z_subset, x_mean_subset, lw=2, label='Subset Mean X', color='black', linestyle='--')
+    ax2.set_title('X-Z Plane Projection')
+    ax2.set_xlabel('Z Position (m)')
+    ax2.set_ylabel('X Position (m)')
+    ax2.legend()
+    ax2.grid(True)
+
+    ax3 = fig.add_subplot(2, 1, 2)
+    ax3.plot(z_full, y_mean_full, lw=2, label='Main Mean Y', color='forestgreen')
+    ax3.fill_between(z_full, y_mean_full - y_std_full, y_mean_full + y_std_full, color='lightgreen', alpha=0.6, label='±1 Std Dev')
+    ax3.plot(z_subset, y_mean_subset, lw=2, label='Subset Mean Y', color='black', linestyle='--')
+    ax3.set_title('Y-Z Plane Projection')
+    ax3.set_xlabel('Z Position (m)')
+    ax3.set_ylabel('Y Position (m)')
+    ax3.legend()
+    ax3.grid(True)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.show()
