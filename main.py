@@ -306,6 +306,6 @@ def _plot(df, out_path):
     with matplotlib.backends.backend_pdf.PdfPages(out_path) as pdf:
         for fig in range(1,  plt.gcf().number + 1):
             pdf.savefig(fig)
-
+    plt.close()
 if __name__ == "__main__":
     plot()

@@ -194,4 +194,4 @@ def plot_stability_comparison(z_full, x_mean_full, x_std_full, y_mean_full, y_st
     ax3.grid(True)
 
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    plt.show()
+    #plt.show()
