@@ -105,8 +105,8 @@ def calc_inclination(x_mean, x_std, y_mean, y_std):
     inclination_mean = np.arccos(np.cos(x_mean_rad) * np.cos(y_mean_rad))
 
     inclination_std = (1/np.tan(inclination_mean)) * np.sqrt(
-        np.pow(np.tan(x_mean_rad), 2) * np.pow(x_std_rad, 2) +
-        np.pow(np.tan(y_mean_rad), 2) * np.pow(y_std_rad, 2)
+        np.power(np.tan(x_mean_rad), 2) * np.power(x_std_rad, 2) +
+        np.power(np.tan(y_mean_rad), 2) * np.power(y_std_rad, 2)
     )
 
     return np.rad2deg(inclination_mean), np.rad2deg(inclination_std)
