@@ -5,11 +5,12 @@ from os.path import isfile, join
 from main import plot
 from matplotlib import pyplot as plt
 # Load values from JSON
-with open("2025-Drill-Log.json") as f:
+year = "2024"
+with open("%s-Drill-Log.json" % year) as f:
     data = json.load(f)
 
 #folder = r"datalog/"
-folder = r"/Users/delia/Library/CloudStorage/OneDrive-SharedLibraries-NERC/BAS BigRAID - Documents/Season Reports/2025/DataLog/" 
+folder = r"/Users/delia/Library/CloudStorage/OneDrive-SharedLibraries-NERC/BAS BigRAID - Documents/Season Reports/%s/DataLog/"%year 
 
 folder = os.path.realpath(folder)
 print(folder)
@@ -18,7 +19,7 @@ onlyfiles = [f for f in os.listdir(folder) if isfile(join(folder, f))]
 
 for i,d in enumerate(data):
     print(d)
-    filename = f"2025-Plots/%02i_Site%02i_%02i_%s.pdf" % (d["number"], d["site"], d["hole"], d["geoloc"])
+    filename = f"%s-Plots/%02i_Site%02i_%02i_%s.pdf" % (year,d["number"], d["site"], d["hole"], d["geoloc"])
     print(filename)
     #filename2 = f"2025-Plots/{i}_Site{d['site']}_{d['hole']}_{d['geoloc']}.pdf"
     #print(filename, filename2)

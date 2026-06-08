@@ -178,7 +178,7 @@ def plot_trajectory_3d(z, x_mean, x_std, y_mean, y_std):
     ax3.grid(True)
 
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    return (ax1,ax2,ax3)
+    return (fig, (ax1,ax2,ax3))
 
 def plot_stability_comparison(z_full, x_mean_full, x_std_full, y_mean_full, y_std_full,
                               z_subset, x_mean_subset, y_mean_subset, subtitle):
@@ -228,4 +228,4 @@ def plot_inclination(z_coords, inclination_mean, inclination_err):
     ax.grid(True)
 
     fig.tight_layout(rect=[0, 0, 1, 0.96])
-    return(ax)
+    return(fig, ax)
