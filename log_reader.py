@@ -18,13 +18,17 @@ class LogReader:
 
     def __init__(self, tagfile: Path | str):
         self._tagfile = Path(tagfile)
+
+        # Check if tagfile exists
         if not self._tagfile.exists():
             raise FileNotFoundError(self._tagfile)
 
+        # Check if the associated "(Float).DAT" file exists
         self._floatfile = self._tagfile.parent / self._tagfile.name.replace("(Tagname)", "(Float)")
         if not self._floatfile.exists():
             raise FileNotFoundError(self._floatfile)
 
+        # All the tags in the Tagfile
         self._tags = {}
         for name, index, type, _, dtype in self._iter_file(self._tagfile, "<256s4s1sc1s"):
             tag = LogReader.Tag(
@@ -47,7 +51,16 @@ class LogReader:
             # Read individual records
             sz = struct.calcsize(fmt)
             while (k := f.read(1)) not in [b'\x1a', b'']:
+
+                # Read number of bytes as calculated from fmt
                 r = f.read(sz)
+
+                # Sometimes the loop tries to read past \x1a
+                if len(r) == 0:
+                    print(f"Reached EOF.")
+                    return;
+
+                # Unpack the format into a struct
                 try:
                     yield struct.unpack(fmt, r)
                 except struct.error as e:
@@ -55,6 +68,7 @@ class LogReader:
                     return
 
     def __iter__(self):
+
         for time_str, msec_str, tag_index_str, value, status, marker, internal in self._iter_file(self._floatfile, '<16s3s5sdcci'):
             time = datetime.strptime(time_str.decode(), "%Y%m%d%H:%M:%S")
             time = time.replace(microsecond= int(msec_str.decode()) * 1000)
@@ -65,7 +79,12 @@ class LogReader:
             yield time, tag, value, status, marker, internal
 
     def as_df(self):
+
+        # Process the Float file
         data = [(time, tag.name, value) for time, tag, value, _, _, _ in self]
+
+        # Convert data to DataFrame
         df = pd.DataFrame(data, columns=['time', 'tag', 'value'])
+        
         return df.pivot(index='time', columns='tag', values='value')
 
