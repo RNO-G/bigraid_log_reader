@@ -1,0 +1,42 @@
+[
+  {
+    "number": 1,
+    "site": 45,
+    "hole": 1,
+    "geoloc": "West",
+    "start": "2026-07-05",
+    "end": "2026-07-08"
+  },
+  {
+    "number": 2,
+    "site": 45,
+    "hole": 2,
+    "geoloc": "East",
+    "start": "2026-07-12",
+    "end": "2026-07-14"
+  },
+  {
+    "number": 3,
+    "site": 45,
+    "hole": 3,
+    "geoloc": "South",
+    "start": "2026-07-15",
+    "end": "2026-07-18"
+  },
+  {
+    "number": 5,
+    "site": 46,
+    "hole": 1,
+    "geoloc": "West",
+    "start": "2026-07-20",
+    "end": "2026-07-21"
+  },
+  {
+  "number": 4,
+  "site": 46,
+  "hole": 2,
+  "geoloc": "East",
+  "start": "2026-07-24",
+  "end": "2026-07-25"
+}
+]

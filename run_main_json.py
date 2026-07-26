@@ -5,7 +5,7 @@ from os.path import isfile, join
 from main import plot
 from matplotlib import pyplot as plt
 # Load values from JSON
-year = "2024"
+year = "2026"
 with open("%s-Drill-Log.json" % year) as f:
     data = json.load(f)
 
