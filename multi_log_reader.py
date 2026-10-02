@@ -44,10 +44,16 @@ class MultiLogReader:
                 end_date = _expand_date(end_date)
 
         readers = []
-        for file in folder.glob("*(Tagname).DAT"):
-            file_date = datetime.strptime(file.name[:10], "%Y %m %d")
+        for file in folder.glob("*_Tagname_.DAT"):
+            file_date = datetime.strptime(file.name[:10], "%Y_%m_%d")
             if start_date <= file_date <= end_date:
-                readers.append(LogReader(file))
+                print(f"appending {file}")
+                try:
+                    readers.append(LogReader(file))
+                except FileNotFoundError:
+                    print("File had problems, not using data")
+            else:
+                print(f"skipping {file}")
 
         return cls(readers, start_date, end_date)
 

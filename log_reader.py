@@ -21,7 +21,7 @@ class LogReader:
         if not self._tagfile.exists():
             raise FileNotFoundError(self._tagfile)
 
-        self._floatfile = self._tagfile.parent / self._tagfile.name.replace("(Tagname)", "(Float)")
+        self._floatfile = self._tagfile.parent / self._tagfile.name.replace("_Tagname_", "_Float_")
         if not self._floatfile.exists():
             raise FileNotFoundError(self._floatfile)
 
