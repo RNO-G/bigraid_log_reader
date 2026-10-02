@@ -16,12 +16,12 @@ class LogReader:
         type: int
         dtype: int
 
-    def __init__(self, tagfile: Path | str):
+    def __init__(self, tagfile):
         self._tagfile = Path(tagfile)
         if not self._tagfile.exists():
             raise FileNotFoundError(self._tagfile)
 
-        self._floatfile = self._tagfile.parent / self._tagfile.name.replace("(Tagname)", "(Float)")
+        self._floatfile = self._tagfile.parent / self._tagfile.name.replace("Tagname", "Float")
         if not self._floatfile.exists():
             raise FileNotFoundError(self._floatfile)
 

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import os
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -10,12 +12,17 @@ from log_reader import LogReader
 from preprocess import preprocess
 
 if __name__ == "__main__":
-    logfile = "./test_data/2024 07 15 0001 BigRAID (Tagname).DAT"
+    logfile = "/home/windischhofer/drill/data_2024/2024_07_08_0000_BigRAID_Tagname.DAT"
+    
     logfile = Path(logfile)
-
+    
     reader = LogReader(tagfile=logfile)
     df = reader.as_df()
 
+    print(df.columns)
+    import sys
+    # sys.exit(1)
+    
     # Add additional calculated columns to the data
     df = preprocess(df)
 
@@ -63,9 +70,9 @@ if __name__ == "__main__":
     ax.set_ylabel("Time [s]")
     ax.set_xlabel("Run")
 
-    fig, axes = plt.subplots(1, 2)
+    fig, axes = plt.subplots(1, 3)
     display_max = 0
-    for i, k in enumerate(["[PLC]IMUPITCH", "[PLC]IMUROLL"]):
+    for i, k in enumerate(["[PLC]IMUPITCH", "[PLC]IMUROLL", "[PLC]IMUYAW"]):
         d = df[(df[k].abs() < 2) & (df["[PLC]WIRESPOOLEDOUT"] > 2)]
         # subtract the mean when the drill is hanging freely above the hole
         zero_offset = df[(df["[PLC]WIRESPOOLEDOUT"] < 1) & (df["[PLC]CABLESPEED"].abs() < 0.1) & (df["[PLC]DRILLFEEDBACKVEL"].abs() < 0.1)][k].mean()
@@ -83,7 +90,10 @@ if __name__ == "__main__":
     fig.suptitle("Angle per Depth")
     fig.supylabel("Wire spooled out [m]")
     fig.supxlabel("Angle [deg]")
+    fig.savefig("angles.pdf")
 
+    print(df.columns)
+    
     fig, axes = plt.subplots(1, 2)
     display_max = 0
     for i, k in enumerate(["hole_pitch", "hole_roll"]):
@@ -104,6 +114,8 @@ if __name__ == "__main__":
     fig.suptitle("Angle per Depth, normalized using IMU Yaw")
     fig.supylabel("Wire spooled out [m]")
     fig.supxlabel("Angle [deg]")
+
+    fig.savefig("angles_2.pdf")
 
     df.plot.scatter(y="[PLC]WIRESPOOLEDOUT", x="[PLC]AUTODOWNSTOPDEPTH", c="run")
     plt.title("Stop Depth vs Depth")
