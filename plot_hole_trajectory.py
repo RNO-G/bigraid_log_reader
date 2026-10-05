@@ -3,6 +3,8 @@ from multi_log_reader import MultiLogReader
 from preprocess import preprocess
 
 from matplotlib import pyplot as plt
+from matplotlib.gridspec import GridSpec
+import numpy as np
 import json
 
 def get_hole_start_end(json_path, site_id, hole_id):
@@ -15,14 +17,23 @@ def get_hole_start_end(json_path, site_id, hole_id):
         hole_metadata = json.load(json_file)
 
         for hole in hole_metadata:
-            if hole["site"] == site_id and hole["hole"] == hole_id:
+            if int(hole["site"]) == site_id and int(hole["hole"]) == hole_id:
                 start = hole["start"]
                 end = hole["end"]
                 break
 
     return start, end
 
-def plot_hole_trajectory(json_path, site_id, hole_id, data_folder):
+def calculate_off_vertical_angle(xvals, yvals, zvals):
+    delta_x = xvals[1:] - xvals[:-1]
+    delta_y = yvals[1:] - yvals[:-1]
+    delta_z = zvals[1:] - zvals[:-1]
+    delta_r = np.linalg.norm([delta_x, delta_y], ord = 2, axis = 0)
+    print(delta_r)
+    off_vertical_deg = np.rad2deg(np.arctan2(delta_r, delta_z))
+    return zvals[:-1], off_vertical_deg
+
+def plot_hole_trajectory(json_path, site_id, hole_id, data_folder, export_data):
     start, end = get_hole_start_end(json_path, site_id, hole_id)
 
     print(f"start: {start}, end: {end}")
@@ -40,6 +51,20 @@ def plot_hole_trajectory(json_path, site_id, hole_id, data_folder):
         dz=dz
     )
 
+    # Calculate and plot the off-vertical angle as a function of depth
+    z_coords_angle, off_vertical_deg = calculate_off_vertical_angle(x_mean, y_mean, z_coords)
+    fig = plt.figure(figsize = (6, 2.1), layout = "constrained")
+    gs = GridSpec(1, 1, figure = fig)
+    ax = fig.add_subplot(gs[0])
+    ax.plot(z_coords_angle, off_vertical_deg)
+    fig.savefig(f"site_{site_id}_hole_{hole_id}_off_vertical.pdf")
+    plt.close()
+
+    if export_data:
+        np.savetxt(f"site_{site_id}_hole_{hole_id}_off_vertical.txt", 
+                   np.transpose([z_coords_angle, off_vertical_deg]))
+
+    # Make the usual 3d hole-trajectory plot
     fig, ax = plot_trajectory_3d(z_coords, x_mean, x_std, y_mean, y_std)
     for ia,a in enumerate(ax):
         print(ia,a)
@@ -52,11 +77,16 @@ def plot_hole_trajectory(json_path, site_id, hole_id, data_folder):
         a.set_title(f"Site {site_id}, hole {hole_id}", fontsize=16)
 
     plt.savefig(f"site_{site_id}_hole_{hole_id}.pdf")
-    
-if __name__ == "__main__":
-    data_folder = "/lustre/fs25/mdt1/radio/pwindi/position_calibration/drill/drill-data/2024/DataLog"
-    json_path = "2024-Drill-Log.json"
-    site_id = 14
-    hole_id = 1
 
-    plot_hole_trajectory(json_path, site_id, hole_id, data_folder)
+if __name__ == "__main__":
+
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-folder", dest = "data_folder")
+    parser.add_argument("--drill-json", dest = "json_path", default = "2024-Drill-Log.json")
+    parser.add_argument("--site", dest = "site_id", type = int)
+    parser.add_argument("--hole", dest = "hole_id", type = int)
+    parser.add_argument("--export-data", dest = "export_data", action = "store_true", default = False)
+    args = vars(parser.parse_args())
+
+    plot_hole_trajectory(**args)
