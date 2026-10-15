@@ -46,7 +46,7 @@ class MultiLogReader:
         readers = []
         for file in folder.glob("*(Tagname).DAT"):
             file_date = datetime.strptime(file.name[:10], "%Y %m %d")
-            if start_date <= file_date <= end_date:
+            if start_date.replace(hour=0, minute=0, second=0, microsecond=0) <= file_date <= end_date:
                 readers.append(LogReader(file))
 
         return cls(readers, start_date, end_date)
